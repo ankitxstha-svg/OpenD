@@ -106,19 +106,18 @@ module.exports = {
     }),
   ],
   // proxy /api to port 8000 during development
+  
   devServer: {
     historyApiFallback: true,
-    proxy: {
-      "/api": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-        pathRewrite: {
-          "^/api": "/api",
-        },
-      },
-    },
     hot: true,
     watchFiles: [path.resolve(__dirname, "src", frontendDirectory)],
     liveReload: true,
-  },
+    proxy: {
+      "/api": {            // all requests starting with /api
+        target: "http://localhost:8000", // go to backend
+        changeOrigin: true,
+      },
+    },
+  }
+  ,
 };
