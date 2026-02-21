@@ -4,6 +4,7 @@ import {Actor, HttpAgent} from "@dfinity/agent";
 import { idlFactory } from "../../../declarations/nft/index";
 import { opend } from "../../../declarations/opend";
 import Button from "./Button";
+import CURRENT_USER_ID from "../index";
 
 function Item(props) {
 
@@ -18,6 +19,8 @@ function Item(props) {
   const [sellStatus, setSellStatus] = useState("");
 
   const principal = props.id? props.id : null;
+  const role = props.role? props.role : null;
+  
   let NFTActor;
   const priceRef = useRef("");
 
@@ -45,17 +48,25 @@ function Item(props) {
       const image = URL.createObjectURL(new Blob([imageContent.buffer], {type: "image/png"}));
       setImage(image);
 
-      const nftIsListed =  await opend.isListed(props.id);
+      if(role == "collection"){
+          const nftIsListed =  await opend.isListed(props.id);
+          console.log("im here");
+          
 
-      if (nftIsListed) {
-        setOwner("OpenD");
-        setBlur({filter: "blur(4px)"});
-        setSellStatus("Listed");
-      }else{
-        setButton(<Button handleClick = {()=> handleSell()} text={"sell"}/>);
-      };
+        if (nftIsListed) {
+          setOwner("OpenD");
+          setBlur({filter: "blur(4px)"});
+          setSellStatus("Listed");
+        }else{
+          setButton(<Button handleClick = {()=> handleSell()} text={"sell"}/>);
+        };
+      }else if(role == "discover"){
+        const originalOwner = await opend.getOriginalOwner(props.id);
+        if(originalOwner.toText() != CURRENT_USER_ID.toText()){
+          setButton(<Button handleClick = {()=> handleBuy()} text={"Buy"}/>);
+        };
 
-
+      }
 
     } catch (error) {
       console.error("failed to load NFT: ", error);
@@ -84,6 +95,11 @@ function Item(props) {
 
     setButton(<Button handleClick = {()=>sellItem()} text={"confirm"}/>);
   };
+
+  async function handleBuy() {
+    console.log("handle buy was triggered");
+    
+  }
 
   async function sellItem(){
 
